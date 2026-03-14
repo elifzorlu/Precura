@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PatientInput } from "@/lib/types";
 
-const IRIS_URL = "http://localhost:52773/api/atelier/v1/USER/action/query";
-const IRIS_AUTH = "Basic " + Buffer.from("demo:demo").toString("base64");
+const IRIS_BASE = process.env.IRIS_BASE_URL ?? "http://localhost:52773";
+const IRIS_URL = `${IRIS_BASE}/api/atelier/v1/USER/action/query`;
+const IRIS_USER = process.env.IRIS_USERNAME ?? "demo";
+const IRIS_PASS = process.env.IRIS_PASSWORD ?? "demo";
+const IRIS_AUTH = "Basic " + Buffer.from(`${IRIS_USER}:${IRIS_PASS}`).toString("base64");
 
 async function irisQuery(query: string, parameters: (string | number)[] = []) {
   const res = await fetch(IRIS_URL, {
