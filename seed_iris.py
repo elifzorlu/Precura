@@ -14,7 +14,7 @@ import requests
 import json
 from base64 import b64encode
 
-IRIS_URL = "http://localhost:52773/api/sql/USER"
+IRIS_URL = "http://localhost:52773/api/atelier/v1/USER/action/query"
 AUTH_HEADER = "Basic " + b64encode(b"demo:demo").decode()
 HEADERS = {"Content-Type": "application/json", "Authorization": AUTH_HEADER}
 
