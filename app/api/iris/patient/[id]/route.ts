@@ -14,9 +14,18 @@ async function irisQuery(query: string, parameters: (string | number)[] = []) {
   return res.json();
 }
 
+/** Normalize a row — IRIS may return column names in any case. */
+function norm(row: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(row)) {
+    out[k.toLowerCase()] = String(v ?? "");
+  }
+  return out;
+}
+
 /**
  * GET /api/iris/patient/[id]
- * Returns the full PatientInput for a given patient ID.
+ * Returns the full PatientInput + disease history for a given patient ID.
  */
 export async function GET(
   _req: NextRequest,
@@ -30,10 +39,11 @@ export async function GET(
       "SELECT PatientID, PatientLabel, PriorTreatmentFailure FROM SQLUser.Patients WHERE PatientID = ?",
       [id]
     );
-    const base = baseData?.result?.content?.[0];
-    if (!base) {
+    const baseRaw = baseData?.result?.content?.[0];
+    if (!baseRaw) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
+    const base = norm(baseRaw);
 
     // 2. Symptoms
     const sympData = await irisQuery(
@@ -41,7 +51,7 @@ export async function GET(
       [id]
     );
     const symptoms: string[] = (sympData?.result?.content ?? []).map(
-      (r: Record<string, string>) => r.Symptom
+      (r: Record<string, unknown>) => norm(r).symptom
     );
 
     // 3. PGx markers
@@ -51,7 +61,8 @@ export async function GET(
     );
     const pharmacogenomicMarkers: Record<string, string> = {};
     for (const r of pgxData?.result?.content ?? []) {
-      pharmacogenomicMarkers[r.Gene] = r.Phenotype;
+      const nr = norm(r);
+      pharmacogenomicMarkers[nr.gene] = nr.phenotype;
     }
 
     // 4. Genomic markers (HER2, ER)
@@ -61,7 +72,8 @@ export async function GET(
     );
     const genomicMarkers: Record<string, string> = {};
     for (const r of genData?.result?.content ?? []) {
-      genomicMarkers[r.MarkerKey] = r.MarkerValue;
+      const nr = norm(r);
+      genomicMarkers[nr.markerkey] = nr.markervalue;
     }
 
     // 5. Lab values
@@ -72,11 +84,27 @@ export async function GET(
     const biomarkers: Record<string, string> = {};
     const labValues: Record<string, { value: string; unit: string }> = {};
     for (const r of labData?.result?.content ?? []) {
-      biomarkers[r.BiomarkerKey] = r.Category;
-      if (r.DisplayValue) {
-        labValues[r.BiomarkerKey] = { value: r.DisplayValue, unit: r.Unit };
+      const nr = norm(r);
+      biomarkers[nr.biomarkerkey] = nr.category;
+      if (nr.displayvalue) {
+        labValues[nr.biomarkerkey] = { value: nr.displayvalue, unit: nr.unit };
       }
     }
+
+    // 6. Disease history — pre-confirmed conditions from medical record
+    const diseaseData = await irisQuery(
+      "SELECT DiseaseDomain, ConditionSubtype FROM SQLUser.DiseaseHistory WHERE PatientID = ?",
+      [id]
+    );
+    const diseaseHistory: { diseaseDomain: string; conditionSubtype?: string }[] = (
+      diseaseData?.result?.content ?? []
+    ).map((r: Record<string, unknown>) => {
+      const nr = norm(r);
+      return {
+        diseaseDomain: nr.diseasedomain,
+        conditionSubtype: nr.conditionsubtype || undefined,
+      };
+    });
 
     const patientInput: PatientInput = {
       symptoms,
@@ -84,12 +112,13 @@ export async function GET(
       pharmacogenomicMarkers,
       biomarkers,
       labValues: Object.keys(labValues).length > 0 ? labValues : undefined,
-      priorTreatmentFailure: base.PriorTreatmentFailure === 1,
+      priorTreatmentFailure: base.priortreatmentfailure === "1",
     };
 
     return NextResponse.json({
       patientInput,
-      label: base.PatientLabel,
+      label: base.patientlabel,
+      diseaseHistory,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";

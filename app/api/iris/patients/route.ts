@@ -13,6 +13,15 @@ async function irisQuery(query: string, parameters: (string | number)[] = []) {
   return res.json();
 }
 
+/** Normalize a row from IRIS — column names may come back in any case. */
+function norm(row: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(row)) {
+    out[k.toLowerCase()] = String(v ?? "");
+  }
+  return out;
+}
+
 /**
  * GET /api/iris/patients?search=marcus
  * Returns a list of patients matching the search term (or all if no search).
@@ -27,23 +36,24 @@ export async function GET(req: NextRequest) {
     const params = search ? [`%${search.toLowerCase()}%`] : [];
 
     const data = await irisQuery(query, params);
-    const rows: Record<string, string>[] = data?.result?.content ?? [];
+    const rows: Record<string, unknown>[] = data?.result?.content ?? [];
 
-    // Fetch one PGx marker per patient for the preview badge
     const patients = await Promise.all(
-      rows.map(async (row) => {
+      rows.map(async (rawRow) => {
+        const row = norm(rawRow);
         const pgxData = await irisQuery(
           "SELECT Gene, Phenotype FROM SQLUser.PGxMarkers WHERE PatientID = ?",
-          [row.PatientID]
+          [row.patientid]
         );
         const pgx: Record<string, string> = {};
         for (const r of pgxData?.result?.content ?? []) {
-          pgx[r.Gene] = r.Phenotype;
+          const nr = norm(r);
+          pgx[nr.gene] = nr.phenotype;
         }
         return {
-          id: row.PatientID,
-          label: row.PatientLabel,
-          description: row.Description,
+          id: row.patientid,
+          label: row.patientlabel,
+          description: row.description,
           pgxSummary: pgx,
         };
       })

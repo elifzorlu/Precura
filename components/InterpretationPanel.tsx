@@ -4,7 +4,7 @@ interface InterpretationPanelProps {
   input: PatientInput;
 }
 
-function PanelRow({ label, value, note }: { label: string; value: string; note?: string }) {
+function PanelRow({ label, value, note, actualValue }: { label: string; value: string; note?: string; actualValue?: { value: string; unit: string } }) {
   const valueColor =
     value.toLowerCase().includes("poor") || value.toLowerCase().includes("high risk")
       ? "text-red-300"
@@ -18,7 +18,16 @@ function PanelRow({ label, value, note }: { label: string; value: string; note?:
     <div className="flex items-start justify-between gap-4 py-2.5 border-b border-white/5 last:border-0">
       <span className="text-white/50 text-sm">{label}</span>
       <div className="text-right">
-        <span className={`text-sm font-medium ${valueColor}`}>{value}</span>
+        {actualValue ? (
+          <>
+            <span className="text-sm font-medium text-white">
+              {actualValue.value} {actualValue.unit}
+            </span>
+            <span className={`text-xs ml-1.5 ${valueColor}`}>({value})</span>
+          </>
+        ) : (
+          <span className={`text-sm font-medium ${valueColor}`}>{value}</span>
+        )}
         {note && <p className="text-white/30 text-xs mt-0.5">{note}</p>}
       </div>
     </div>
@@ -29,6 +38,7 @@ export default function InterpretationPanel({ input }: InterpretationPanelProps)
   const pgxEntries = Object.entries(input.pharmacogenomicMarkers);
   const genomicEntries = Object.entries(input.genomicMarkers);
   const biomarkerEntries = Object.entries(input.biomarkers);
+  const labValues = input.labValues ?? {};
   const symptoms = input.symptoms ?? [];
 
   const pgxNotes: Record<string, string> = {
@@ -122,6 +132,7 @@ export default function InterpretationPanel({ input }: InterpretationPanelProps)
                 key={key}
                 label={key.toUpperCase().replace(/_/g, " ")}
                 value={val.charAt(0).toUpperCase() + val.slice(1)}
+                actualValue={labValues[key]}
                 note={biomarkerNotes[key]}
               />
             ))}

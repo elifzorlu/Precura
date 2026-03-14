@@ -41,6 +41,7 @@ def drop_and_create():
         "SQLUser.PGxMarkers",
         "SQLUser.GenomicMarkers",
         "SQLUser.LabValues",
+        "SQLUser.DiseaseHistory",
         "SQLUser.Patients",
     ]
     for t in tables:
@@ -82,6 +83,13 @@ def drop_and_create():
             Category       VARCHAR(20),
             DisplayValue   VARCHAR(100),
             Unit           VARCHAR(50)
+        )
+    """)
+    sql("""
+        CREATE TABLE SQLUser.DiseaseHistory (
+            PatientID        VARCHAR(50),
+            DiseaseDomain    VARCHAR(50),
+            ConditionSubtype VARCHAR(50)
         )
     """)
     print("Tables created.\n")
@@ -305,6 +313,51 @@ PATIENTS = [
     },
 ]
 
+# ── Disease history (confirmed diagnoses per patient) ──────────────────────
+
+DISEASE_HISTORY = {
+    "marcus-t": [
+        {"domain": "cardiovascular", "subtype": "cad"},
+        {"domain": "stroke",         "subtype": "tia"},
+    ],
+    "james-r": [
+        {"domain": "cardiovascular", "subtype": "hypertension"},
+    ],
+    "elena-v": [
+        {"domain": "cardiovascular", "subtype": "atrial_fibrillation"},
+    ],
+    "robert-k": [
+        {"domain": "stroke", "subtype": "ischemic"},
+    ],
+    "fatima-a": [
+        {"domain": "cardiovascular", "subtype": "hypertension"},
+        {"domain": "stroke",         "subtype": "tia"},
+    ],
+    "diana-k": [
+        {"domain": "breastCancer",   "subtype": None},
+        {"domain": "cardiovascular", "subtype": "hypertension"},
+    ],
+    "sarah-o": [
+        {"domain": "breastCancer", "subtype": None},
+        {"domain": "stroke",       "subtype": "ischemic"},
+    ],
+    "amara-n": [
+        {"domain": "breastCancer", "subtype": None},
+    ],
+    "priya-m": [
+        {"domain": "breastCancer", "subtype": None},
+    ],
+    "chen-w": [
+        {"domain": "cardiovascular", "subtype": "cad"},
+    ],
+    "lena-b": [
+        {"domain": "depression", "subtype": None},
+    ],
+    "david-o": [
+        {"domain": "depression", "subtype": None},
+    ],
+}
+
 
 def seed_patients():
     print("Seeding patients...")
@@ -337,6 +390,12 @@ def seed_patients():
             sql(
                 "INSERT INTO SQLUser.LabValues (PatientID, BiomarkerKey, Category, DisplayValue, Unit) VALUES (?,?,?,?,?)",
                 [p["id"], bkey, bdata["category"], bdata["value"], bdata["unit"]],
+            )
+        # Disease history
+        for d in DISEASE_HISTORY.get(p["id"], []):
+            sql(
+                "INSERT INTO SQLUser.DiseaseHistory (PatientID, DiseaseDomain, ConditionSubtype) VALUES (?,?,?)",
+                [p["id"], d["domain"], d["subtype"] or ""],
             )
         print(f"  ✓ {p['label']}")
     print(f"\nSeeded {len(PATIENTS)} patients.\n")

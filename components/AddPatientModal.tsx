@@ -98,6 +98,7 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
   const [loadedPatient, setLoadedPatient] = useState<{
     label: string;
     input: PatientInput;
+    diseaseHistory: { diseaseDomain: string; conditionSubtype?: string }[];
   } | null>(null);
   const [loadingPatient, setLoadingPatient] = useState(false);
 
@@ -155,10 +156,15 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
       if (data.error) {
         setIrisError(data.detail ?? data.error);
       } else {
-        setLoadedPatient({ label: data.label, input: data.patientInput });
+        setLoadedPatient({
+          label: data.label,
+          input: data.patientInput,
+          diseaseHistory: data.diseaseHistory ?? [],
+        });
         setVcfResult(null);
         setVcfFileName(null);
-        setSelectedDiseases([]);
+        // Pre-populate diseases from IRIS history
+        setSelectedDiseases(data.diseaseHistory ?? []);
         setStep("vcf");
       }
     } catch {
@@ -581,7 +587,7 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
                   Select applicable conditions
                 </p>
                 <p className="text-white/30 text-xs mb-4">
-                  Choose the disease domains to generate recommendations for.
+                  Pre-filled from IRIS medical history — confirm or adjust before generating.
                 </p>
                 <div className="space-y-3">
                   {ACTIVE_DISEASES.map((disease) => {
@@ -610,8 +616,17 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
                             className="w-4 h-4 rounded accent-cyan-500"
                           />
                           <span className="text-xl">{disease.icon}</span>
-                          <div>
-                            <p className="text-white font-medium text-sm">{disease.label}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-medium text-sm">{disease.label}</p>
+                              {loadedPatient?.diseaseHistory.some(
+                                (d) => d.diseaseDomain === disease.id
+                              ) && (
+                                <span className="px-1.5 py-0.5 rounded text-xs border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                                  from IRIS
+                                </span>
+                              )}
+                            </div>
                             <p className="text-white/40 text-xs">{disease.description}</p>
                           </div>
                         </label>
