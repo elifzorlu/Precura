@@ -6,6 +6,7 @@ export interface PatientInput {
   genomicMarkers: Record<string, string>;
   pharmacogenomicMarkers: Record<string, string>;
   biomarkers: Record<string, string>;
+  labValues?: Record<string, { value: string; unit: string }>;
   priorTreatmentFailure: boolean;
 }
 

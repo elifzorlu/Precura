@@ -83,3 +83,36 @@ export function buildMultiDiseaseResult(
     timestamp: new Date().toISOString(),
   };
 }
+
+/** Multi-disease build from doctor-selected diseases — used by Add Patient (IRIS) flow */
+export function buildMultiDiseaseResultFromSelected(
+  input: PatientInput,
+  patientLabel: string,
+  selectedDiseases: { diseaseDomain: string; conditionSubtype?: string }[]
+): AnalysisResult {
+  const inferredDiseases: DiseaseAnalysis[] = selectedDiseases.map(
+    ({ diseaseDomain, conditionSubtype }) => {
+      const diseaseInput: PatientInput = { ...input, diseaseDomain, conditionSubtype };
+      const raw = runInference(diseaseInput);
+      const sorted = sortRecommendations(raw);
+      const config = DISEASE_CONFIGS.find((d) => d.id === diseaseDomain);
+
+      return {
+        diseaseDomain,
+        diseaseLabel: config?.label ?? diseaseDomain,
+        diseaseIcon: config?.icon ?? "💊",
+        conditionSubtype,
+        confidence: "high",
+        confidenceFactors: ["Clinician-confirmed diagnosis"],
+        recommendations: sorted,
+      };
+    }
+  );
+
+  return {
+    patientInput: input,
+    patientLabel,
+    inferredDiseases,
+    timestamp: new Date().toISOString(),
+  };
+}

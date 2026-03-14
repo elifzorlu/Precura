@@ -6,6 +6,7 @@ import { inferDiseases } from "@/lib/inference/diagnose";
 import { buildMultiDiseaseResult } from "@/lib/inference/engine";
 import { DISEASE_CONFIGS } from "@/lib/config/diseases";
 import { SamplePatient } from "@/lib/types";
+import AddPatientModal from "./AddPatientModal";
 
 const stubDiseases = DISEASE_CONFIGS.filter((d) => d.isStub);
 
@@ -13,6 +14,7 @@ export default function PatientPicker() {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const selectedPatient: SamplePatient | null =
     SAMPLE_PATIENTS.find((p) => p.id === selectedId) ?? null;
@@ -38,6 +40,14 @@ export default function PatientPicker() {
             Each patient's genomic, proteomic, and symptom data is analyzed to infer their
             conditions and generate a pharmacogenomic treatment report.
           </p>
+          <div className="mt-6">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="px-6 py-3 rounded-xl font-semibold text-sm bg-cyan-600 hover:bg-cyan-500 text-white transition-all shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:shadow-[0_0_40px_rgba(6,182,212,0.35)]"
+            >
+              + Load Patient from IRIS
+            </button>
+          </div>
         </div>
 
         {/* Patient cards */}
@@ -168,6 +178,7 @@ export default function PatientPicker() {
           </div>
         )}
       </div>
+      {modalOpen && <AddPatientModal onClose={() => setModalOpen(false)} />}
     </section>
   );
 }
