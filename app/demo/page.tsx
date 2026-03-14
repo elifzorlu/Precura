@@ -9,8 +9,8 @@ import DiseaseSelector from "@/components/DiseaseSelector";
 import SamplePatientPicker from "@/components/SamplePatientPicker";
 import DynamicPatientForm from "@/components/DynamicPatientForm";
 import DisclaimerBanner from "@/components/DisclaimerBanner";
-import { usePatient, PatientSchema, PatientInput } from "@/context/PatientContext";
-import { AnalysisResult } from "@/lib/types";
+import { usePatient, PatientSchema } from "@/context/PatientContext";
+import { PatientInput, AnalysisResult } from "@/lib/types";
 
 function emptyInput(diseaseId: string): PatientInput {
   return {

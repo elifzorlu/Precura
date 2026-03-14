@@ -1,19 +1,17 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { z } from "zod";
-import { AnalysisResult } from "@/lib/types";
+import { AnalysisResult, PatientInput } from "@/lib/types";
 
-// Zod schema matching your real form
+// Zod schema matching the PatientInput interface
 export const PatientSchema = z.object({
   diseaseDomain: z.string(),
   conditionSubtype: z.string().optional(),
-  genomicMarkers: z.record(z.string(), z.any()),
-  pharmacogenomicMarkers: z.record(z.string(), z.any()),
-  biomarkers: z.record(z.string(), z.any()),
+  genomicMarkers: z.record(z.string(), z.string()),
+  pharmacogenomicMarkers: z.record(z.string(), z.string()),
+  biomarkers: z.record(z.string(), z.string()),
   priorTreatmentFailure: z.boolean(),
 });
-
-export type PatientInput = z.infer<typeof PatientSchema>;
 
 interface PatientContextType {
   patient: PatientInput | null;
