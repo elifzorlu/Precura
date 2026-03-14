@@ -2,7 +2,28 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+
+```bash
+npm install
+# or
+yarn
+# or
+pnpm install
+
+
+Then, install Zod for type-safe form validation:
+
+```bash
+npm install zod
+# or
+yarn add zod
+# or
+pnpm add zod
+
+
+Run the development server:
 
 ```bash
 npm run dev
@@ -12,7 +33,6 @@ yarn dev
 pnpm dev
 # or
 bun dev
-```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
