@@ -5,6 +5,7 @@ import { PatientInput } from "@/lib/types";
 import { DISEASE_CONFIGS } from "@/lib/config/diseases";
 import { buildMultiDiseaseResultFromSelected } from "@/lib/inference/engine";
 import { parseVcf, ParsedVcfResult } from "@/lib/vcf/parser";
+import { GnomadVariantInfo, fetchAllGnomadFrequencies, formatAf } from "@/lib/vcf/gnomad";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,11 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
   const [vcfParsing, setVcfParsing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // gnomAD population frequencies (fetched after VCF parse)
+  const [gnomadData, setGnomadData] = useState<Record<string, GnomadVariantInfo>>({});
+  const [gnomadLoading, setGnomadLoading] = useState(false);
+  const [expandedRsId, setExpandedRsId] = useState<string | null>(null);
+
   // Disease selection
   const [selectedDiseases, setSelectedDiseases] = useState<SelectedDisease[]>([]);
   const [generating, setGenerating] = useState(false);
@@ -179,12 +185,22 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
   function handleVcfFile(file: File) {
     setVcfParsing(true);
     setVcfFileName(file.name);
+    setGnomadData({});
+    setExpandedRsId(null);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const text = e.target?.result as string;
       try {
         const result = parseVcf(text);
         setVcfResult(result);
+        // Fetch gnomAD frequencies for all detected variants
+        if (result.detectedVariants.length > 0) {
+          setGnomadLoading(true);
+          const rsIds = result.detectedVariants.map((v) => v.rsId);
+          const freq = await fetchAllGnomadFrequencies(rsIds);
+          setGnomadData(freq);
+          setGnomadLoading(false);
+        }
       } catch {
         setVcfResult(null);
       } finally {
@@ -469,6 +485,80 @@ export default function AddPatientModal({ onClose }: { onClose: () => void }) {
                       ))}
                     </div>
                   </div>
+
+                  {/* gnomAD population frequencies */}
+                  {(gnomadLoading || Object.keys(gnomadData).length > 0) && (
+                    <div className="border-t border-white/5 pt-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white/40 text-xs font-medium uppercase tracking-wider">
+                          gnomAD v4 Population Frequencies
+                        </span>
+                        {gnomadLoading && (
+                          <span className="text-white/30 text-xs animate-pulse">fetching…</span>
+                        )}
+                        {!gnomadLoading && Object.values(gnomadData).some((d) => d.source === "live") && (
+                          <span className="px-1.5 py-0.5 rounded text-xs border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                            live
+                          </span>
+                        )}
+                        {!gnomadLoading && Object.values(gnomadData).every((d) => d.source === "reference") && (
+                          <span className="px-1.5 py-0.5 rounded text-xs border border-white/10 text-white/30 bg-white/5">
+                            reference data
+                          </span>
+                        )}
+                      </div>
+
+                      {Object.entries(gnomadData).map(([rsId, info]) => (
+                        <div key={rsId} className="rounded-lg border border-white/5 bg-[#0a0a0f] p-3">
+                          <button
+                            className="w-full flex items-center justify-between gap-2"
+                            onClick={() => setExpandedRsId(expandedRsId === rsId ? null : rsId)}
+                          >
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="font-mono text-white/50">{rsId}</span>
+                              <span className="text-white/30">·</span>
+                              <span className="text-white/70 font-medium">
+                                {info.gene.toUpperCase()} {info.starAllele}
+                              </span>
+                              <span className="text-white/30">·</span>
+                              <span className="text-white/60">
+                                Overall: <span className="text-white font-medium">{formatAf(info.overallAf)}</span>
+                              </span>
+                            </div>
+                            <span className="text-white/30 text-xs">
+                              {expandedRsId === rsId ? "▲" : "▼"}
+                            </span>
+                          </button>
+
+                          {expandedRsId === rsId && (
+                            <div className="mt-3 space-y-2">
+                              {/* Population frequency bars */}
+                              <div className="space-y-1.5">
+                                {info.populations.map((pop) => (
+                                  <div key={pop.id} className="flex items-center gap-2">
+                                    <span className="text-white/40 text-xs w-36 shrink-0">{pop.label}</span>
+                                    <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full bg-cyan-500/60"
+                                        style={{ width: `${Math.min(pop.af * 100 * 2, 100)}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-white/60 text-xs w-10 text-right font-mono">
+                                      {formatAf(pop.af)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              {/* Clinical note */}
+                              <p className="text-white/30 text-xs leading-relaxed pt-1 border-t border-white/5">
+                                {info.populationNote}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Parsing notes */}
                   {vcfResult.parsingNotes.length > 0 && (
