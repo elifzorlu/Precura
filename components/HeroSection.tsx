@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function HeroSection() {
   return (
     <section className="relative pt-32 pb-20 px-6 overflow-hidden">
@@ -36,20 +34,12 @@ export default function HeroSection() {
           change treatment suitability — before a single prescription is written.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/demo"
-            className="px-8 py-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-colors shadow-[0_0_30px_rgba(6,182,212,0.25)] hover:shadow-[0_0_40px_rgba(6,182,212,0.35)]"
-          >
-            Launch Demo →
-          </Link>
-          <a
-            href="#how-it-works"
-            className="px-8 py-3.5 rounded-xl border border-white/10 text-white/70 hover:text-white hover:border-white/20 font-medium text-sm transition-colors"
-          >
-            How it works
-          </a>
-        </div>
+        <a
+          href="#patients"
+          className="px-8 py-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-colors shadow-[0_0_30px_rgba(6,182,212,0.25)] hover:shadow-[0_0_40px_rgba(6,182,212,0.35)]"
+        >
+          View Patients ↓
+        </a>
       </div>
     </section>
   );

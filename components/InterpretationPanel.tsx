@@ -29,6 +29,7 @@ export default function InterpretationPanel({ input }: InterpretationPanelProps)
   const pgxEntries = Object.entries(input.pharmacogenomicMarkers);
   const genomicEntries = Object.entries(input.genomicMarkers);
   const biomarkerEntries = Object.entries(input.biomarkers);
+  const symptoms = input.symptoms ?? [];
 
   const pgxNotes: Record<string, string> = {
     cyp2c19: "Metabolizes clopidogrel, PPIs, and other drugs",
@@ -51,60 +52,82 @@ export default function InterpretationPanel({ input }: InterpretationPanelProps)
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* Pharmacogenomics */}
-      {pgxEntries.length > 0 && (
+    <div className="space-y-4">
+      {/* Symptoms */}
+      {symptoms.length > 0 && (
         <div className="rounded-xl border border-white/5 bg-[#13131a] p-5">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-2 rounded-full bg-orange-400" />
-            <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Pharmacogenomics</h3>
+            <div className="w-2 h-2 rounded-full bg-rose-400" />
+            <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Presenting Symptoms</h3>
           </div>
-          {pgxEntries.map(([key, val]) => (
-            <PanelRow
-              key={key}
-              label={key.toUpperCase()}
-              value={val.charAt(0).toUpperCase() + val.slice(1).replace("_", " ")}
-              note={pgxNotes[key]}
-            />
-          ))}
+          <div className="flex flex-wrap gap-2">
+            {symptoms.map((s) => (
+              <span
+                key={s}
+                className="px-3 py-1 rounded-full text-xs border border-white/10 bg-white/5 text-white/70"
+              >
+                {s}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Genomics */}
-      {genomicEntries.length > 0 && (
-        <div className="rounded-xl border border-white/5 bg-[#13131a] p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-2 rounded-full bg-violet-400" />
-            <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Genomic Markers</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Pharmacogenomics */}
+        {pgxEntries.length > 0 && (
+          <div className="rounded-xl border border-white/5 bg-[#13131a] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-orange-400" />
+              <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Pharmacogenomics</h3>
+            </div>
+            {pgxEntries.map(([key, val]) => (
+              <PanelRow
+                key={key}
+                label={key.toUpperCase()}
+                value={val.charAt(0).toUpperCase() + val.slice(1).replace("_", " ")}
+                note={pgxNotes[key]}
+              />
+            ))}
           </div>
-          {genomicEntries.map(([key, val]) => (
-            <PanelRow
-              key={key}
-              label={key.toUpperCase()}
-              value={val.charAt(0).toUpperCase() + val.slice(1)}
-              note={genomicNotes[key]}
-            />
-          ))}
-        </div>
-      )}
+        )}
 
-      {/* Biomarkers */}
-      {biomarkerEntries.length > 0 && (
-        <div className="rounded-xl border border-white/5 bg-[#13131a] p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-2 rounded-full bg-blue-400" />
-            <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Biomarkers</h3>
+        {/* Genomics */}
+        {genomicEntries.length > 0 && (
+          <div className="rounded-xl border border-white/5 bg-[#13131a] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-violet-400" />
+              <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Genomic Markers</h3>
+            </div>
+            {genomicEntries.map(([key, val]) => (
+              <PanelRow
+                key={key}
+                label={key.toUpperCase()}
+                value={val.charAt(0).toUpperCase() + val.slice(1)}
+                note={genomicNotes[key]}
+              />
+            ))}
           </div>
-          {biomarkerEntries.map(([key, val]) => (
-            <PanelRow
-              key={key}
-              label={key.toUpperCase().replace(/_/g, " ")}
-              value={val.charAt(0).toUpperCase() + val.slice(1)}
-              note={biomarkerNotes[key]}
-            />
-          ))}
-        </div>
-      )}
+        )}
+
+        {/* Biomarkers */}
+        {biomarkerEntries.length > 0 && (
+          <div className="rounded-xl border border-white/5 bg-[#13131a] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-blue-400" />
+              <h3 className="text-white/70 text-sm font-medium uppercase tracking-wider">Biomarkers / Proteomic</h3>
+            </div>
+            {biomarkerEntries.map(([key, val]) => (
+              <PanelRow
+                key={key}
+                label={key.toUpperCase().replace(/_/g, " ")}
+                value={val.charAt(0).toUpperCase() + val.slice(1)}
+                note={biomarkerNotes[key]}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

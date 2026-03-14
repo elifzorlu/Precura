@@ -41,3 +41,45 @@ select option {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* ── Print / PDF styles ─────────────────────────────────────────────────── */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  body { background: #ffffff !important; color: #000000 !important; font-size: 11pt; }
+
+  /* Hide nav, buttons, interactive elements */
+  nav, .print\:hidden { display: none !important; }
+
+  /* Show print-only elements */
+  .print\:block { display: block !important; }
+
+  /* Page layout */
+  .min-h-screen { min-height: unset !important; }
+  .mx-auto { max-width: 100% !important; }
+
+  /* Readable text on white */
+  .text-white { color: #111111 !important; }
+  .text-white\/50, .text-white\/40, .text-white\/30, .text-white\/60, .text-white\/70 { color: #555555 !important; }
+
+  /* Card borders */
+  .border-white\/5, .border-white\/10 { border-color: #dddddd !important; }
+
+  /* Dark backgrounds → white */
+  .bg-\[\#0a0a0f\], .bg-\[\#13131a\], .bg-\[\#0f0f17\], .bg-\[\#0d1117\] { background: #ffffff !important; }
+
+  /* Keep color-coded category backgrounds muted */
+  .bg-cyan-500\/10 { background: #e0f7fa !important; }
+  .bg-amber-500\/10 { background: #fff8e1 !important; }
+  .bg-red-500\/10 { background: #ffebee !important; }
+  .bg-emerald-500\/10 { background: #e8f5e9 !important; }
+
+  /* Page breaks */
+  .mb-10 { page-break-inside: avoid; }
+  h2 { page-break-after: avoid; }
+
+  @page {
+    margin: 1.5cm 2cm;
+    size: A4 portrait;
+  }
+}

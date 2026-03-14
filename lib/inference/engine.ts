@@ -1,8 +1,10 @@
-import { PatientInput, DrugRecommendation, AnalysisResult } from "@/lib/types";
+import { PatientInput, DrugRecommendation, AnalysisResult, DiseaseAnalysis } from "@/lib/types";
 import { evaluateCardiovascular } from "@/lib/rules/cardiovascular";
 import { evaluateBreastCancer } from "@/lib/rules/breastCancer";
 import { evaluateStroke } from "@/lib/rules/stroke";
+import { evaluateDepression } from "@/lib/rules/depression";
 import { DISEASE_CONFIGS } from "@/lib/config/diseases";
+import { inferDiseases } from "@/lib/inference/diagnose";
 
 export function runInference(input: PatientInput): DrugRecommendation[] {
   switch (input.diseaseDomain) {
@@ -12,6 +14,8 @@ export function runInference(input: PatientInput): DrugRecommendation[] {
       return evaluateBreastCancer(input);
     case "stroke":
       return evaluateStroke(input);
+    case "depression":
+      return evaluateDepression(input);
     default:
       return [];
   }
@@ -26,6 +30,7 @@ export function sortRecommendations(recommendations: DrugRecommendation[]): Drug
   });
 }
 
+/** Legacy single-disease build — used by /demo page */
 export function buildAnalysisResult(input: PatientInput): AnalysisResult {
   const raw = runInference(input);
   const sorted = sortRecommendations(raw);
@@ -33,8 +38,48 @@ export function buildAnalysisResult(input: PatientInput): AnalysisResult {
 
   return {
     patientInput: input,
-    recommendations: sorted,
+    patientLabel: "Manual Entry",
+    inferredDiseases: [],
     diseaseLabel: disease?.label ?? input.diseaseDomain,
+    recommendations: sorted,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+/** Multi-disease build — used by patient-first flow */
+export function buildMultiDiseaseResult(
+  input: PatientInput,
+  patientLabel: string
+): AnalysisResult {
+  const inferred = inferDiseases(input);
+
+  const inferredDiseases: DiseaseAnalysis[] = inferred.map(
+    ({ diseaseDomain, conditionSubtype, confidence, confidenceFactors }) => {
+      const diseaseInput: PatientInput = {
+        ...input,
+        diseaseDomain,
+        conditionSubtype,
+      };
+      const raw = runInference(diseaseInput);
+      const sorted = sortRecommendations(raw);
+      const config = DISEASE_CONFIGS.find((d) => d.id === diseaseDomain);
+
+      return {
+        diseaseDomain,
+        diseaseLabel: config?.label ?? diseaseDomain,
+        diseaseIcon: config?.icon ?? "💊",
+        conditionSubtype,
+        confidence,
+        confidenceFactors,
+        recommendations: sorted,
+      };
+    }
+  );
+
+  return {
+    patientInput: input,
+    patientLabel,
+    inferredDiseases,
     timestamp: new Date().toISOString(),
   };
 }

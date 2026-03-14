@@ -1,11 +1,7 @@
-import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
-import { DISEASE_CONFIGS } from "@/lib/config/diseases";
+import PatientPicker from "@/components/PatientPicker";
 
 export default function Home() {
-  const activeDiseases = DISEASE_CONFIGS.filter((d) => !d.isStub);
-  const stubDiseases = DISEASE_CONFIGS.filter((d) => d.isStub);
-
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       <HeroSection />
@@ -51,61 +47,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Disease domains */}
-      <section className="px-6 py-20 border-t border-white/5">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-10">
-            <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Supported Domains</p>
-            <h2 className="text-3xl font-bold text-white">Three diseases. Full PGx-aware reasoning.</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            {activeDiseases.map((d) => (
-              <Link
-                key={d.id}
-                href="/demo"
-                className="group p-5 rounded-xl border border-white/10 bg-[#13131a] hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-200"
-              >
-                <div className="text-3xl mb-3">{d.icon}</div>
-                <h3 className="text-white font-semibold text-sm mb-1.5">{d.label}</h3>
-                <p className="text-white/40 text-xs leading-relaxed">{d.description}</p>
-                <div className="mt-3 flex items-center gap-1 text-cyan-500 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  Explore →
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {stubDiseases.map((d) => (
-              <div key={d.id} className="relative p-5 rounded-xl border border-white/5 bg-[#13131a] opacity-50">
-                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/30 text-xs">
-                  Coming Soon
-                </div>
-                <div className="text-3xl mb-3">{d.icon}</div>
-                <h3 className="text-white font-semibold text-sm mb-1.5">{d.label}</h3>
-                <p className="text-white/40 text-xs leading-relaxed">{d.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 py-20 border-t border-white/5">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Try a sample patient in under 60 seconds</h2>
-          <p className="text-white/50 mb-8 text-lg">
-            Load a pre-built patient profile and see how genomic context reshapes the treatment landscape.
-          </p>
-          <Link
-            href="/demo"
-            className="inline-flex px-8 py-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-all shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:shadow-[0_0_40px_rgba(6,182,212,0.35)]"
-          >
-            Launch Demo →
-          </Link>
-        </div>
-      </section>
+      {/* Patient registry */}
+      <PatientPicker />
 
       {/* Footer disclaimer */}
       <footer className="border-t border-white/5 px-6 py-8">

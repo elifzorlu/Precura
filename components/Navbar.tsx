@@ -30,15 +30,7 @@ export default function Navbar() {
                 pathname === "/" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
               }`}
             >
-              Home
-            </Link>
-            <Link
-              href="/demo"
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                pathname === "/demo" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
-              }`}
-            >
-              Demo
+              Patients
             </Link>
             <Link
               href="/results"
@@ -46,7 +38,7 @@ export default function Navbar() {
                 pathname === "/results" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
               }`}
             >
-              Results
+              Report
             </Link>
           </div>
         </div>

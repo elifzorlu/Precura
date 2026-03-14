@@ -1,5 +1,7 @@
 export interface PatientInput {
-  diseaseDomain: string;
+  symptoms: string[];
+  currentMedications?: string[];
+  diseaseDomain?: string;
   conditionSubtype?: string;
   genomicMarkers: Record<string, string>;
   pharmacogenomicMarkers: Record<string, string>;
@@ -39,6 +41,7 @@ export interface SamplePatient {
   label: string;
   description: string;
   input: PatientInput;
+  biomarkerDisplay?: Record<string, { value: string; unit: string }>;
 }
 
 export interface DiseaseConfig {
@@ -51,9 +54,29 @@ export interface DiseaseConfig {
   samplePatients: SamplePatient[];
 }
 
+export interface InferredDisease {
+  diseaseDomain: string;
+  conditionSubtype?: string;
+  confidence: "high" | "medium" | "low";
+  confidenceFactors: string[];
+}
+
+export interface DiseaseAnalysis {
+  diseaseDomain: string;
+  diseaseLabel: string;
+  diseaseIcon: string;
+  conditionSubtype?: string;
+  confidence: "high" | "medium" | "low";
+  confidenceFactors: string[];
+  recommendations: DrugRecommendation[];
+}
+
 export interface AnalysisResult {
   patientInput: PatientInput;
-  recommendations: DrugRecommendation[];
-  diseaseLabel: string;
+  patientLabel: string;
+  inferredDiseases: DiseaseAnalysis[];
   timestamp: string;
+  // Legacy fields for /demo page
+  diseaseLabel?: string;
+  recommendations?: DrugRecommendation[];
 }

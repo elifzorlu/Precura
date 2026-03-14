@@ -236,10 +236,47 @@ export const DISEASE_CONFIGS: DiseaseConfig[] = [
   {
     id: "depression",
     label: "Depression",
-    description: "SSRI/SNRI selection informed by CYP2D6 and CYP2C19 pharmacogenomics.",
+    description: "SSRI/SNRI/TCA selection guided by CYP2D6 and CYP2C19 pharmacogenomics — two of the most clinically impactful PGx interactions in psychiatry.",
     icon: "🧩",
-    isStub: true,
-    requiredInputs: [],
+    isStub: false,
+    requiredInputs: [
+      {
+        key: "cyp2d6",
+        label: "CYP2D6 Status",
+        type: "select",
+        group: "pharmacogenomic",
+        description: "Metabolizes fluoxetine, paroxetine, venlafaxine, amitriptyline, and nortriptyline.",
+        options: [
+          { value: "poor", label: "Poor Metabolizer" },
+          { value: "intermediate", label: "Intermediate Metabolizer" },
+          { value: "normal", label: "Normal Metabolizer" },
+          { value: "ultrarapid", label: "Ultrarapid Metabolizer" },
+        ],
+      },
+      {
+        key: "cyp2c19",
+        label: "CYP2C19 Status",
+        type: "select",
+        group: "pharmacogenomic",
+        description: "Metabolizes escitalopram, citalopram, sertraline, and amitriptyline.",
+        options: [
+          { value: "poor", label: "Poor Metabolizer" },
+          { value: "intermediate", label: "Intermediate Metabolizer" },
+          { value: "normal", label: "Normal Metabolizer" },
+          { value: "ultrarapid", label: "Ultrarapid Metabolizer" },
+        ],
+      },
+      {
+        key: "priorTreatmentFailure",
+        label: "Prior Antidepressant Failure",
+        type: "toggle",
+        group: "clinical",
+        options: [
+          { value: "yes", label: "Yes" },
+          { value: "no", label: "No" },
+        ],
+      },
+    ],
     samplePatients: [],
   },
   {
