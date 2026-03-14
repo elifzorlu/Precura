@@ -1,17 +1,18 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Precura
+
+A precision medicine analysis tool built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Getting Started
 
 First, install dependencies:
 
-
 ```bash
 npm install
 # or
-yarn
+yarn install
 # or
 pnpm install
-
+```
 
 Then, install Zod for type-safe form validation:
 
@@ -21,7 +22,7 @@ npm install zod
 yarn add zod
 # or
 pnpm add zod
-
+```
 
 Run the development server:
 
@@ -33,6 +34,7 @@ yarn dev
 pnpm dev
 # or
 bun dev
+```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
